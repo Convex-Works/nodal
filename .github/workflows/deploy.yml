@@ -39,13 +39,13 @@ jobs:
           static_site_generator: sveltekit
 
       - name: Build
-        run: cd examples && bun install && bun run prepare && bun run build
+        run: bun install && bun run build
 
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v3
         with:
           # this should match the `pages` option in your adapter-static options
-          path: 'examples/build'
+          path: 'build'
 
   deploy:
     needs: build
