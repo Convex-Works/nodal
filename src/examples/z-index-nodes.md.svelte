@@ -107,7 +107,8 @@
                 {#if node}
                     {@render isometricCube({
                         id: `node-${rowIndex}-${colIndex}-${layerIndex}`,
-                        zIndex: calcZindex(rowIndex, colIndex, layerIndex),
+                        // zIndex: calcZindex(rowIndex, colIndex, layerIndex),
+                        style: `z-index: ${calcZindex(rowIndex, colIndex, layerIndex)}`,
                         x: colIndex * 30 + layerIndex * 120,
                         y: rowIndex * 40 + colIndex * 20 - layerIndex * 50,
                         connect:

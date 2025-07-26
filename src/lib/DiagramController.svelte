@@ -38,13 +38,13 @@
 </script>
 
 <!-- first time to register all the nodes and edges -->
-<PrerenderDiagram {nodes} {edges} {children} {layers} />
+<PrerenderDiagram {nodes} {edges} {children} />
 
 <!-- second time to actually render it after we calculate all the relative positions and total widths and heights -->
 <!-- this is necessary because we need to calculate the relative positions of the nodes and edges -->
 <!-- TODO: Investigate how to do this properly with hydrate and mount and render https://svelte.dev/docs/svelte/imperative-component-api#hydrate -->
 <div {...rest}>
-    <Diagram {nodes} {edges} {layers}>
+    <Diagram {nodes} {edges}>
         {@render children()}
     </Diagram>
 </div>

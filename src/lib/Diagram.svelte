@@ -251,7 +251,7 @@
             }
             acc.get(zIndex)!.push(edge);
             return acc;
-        }, new Map<number, DiagramEdge[]>()),
+        }, new Map<number, DiagramEdgeDef[]>()),
     );
 
     // let depthMap = new SvelteMap<number, [DiagramEdge[], DiagramNode[]]>();
