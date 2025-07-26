@@ -1,6 +1,12 @@
 <script lang="ts" module>
-    const browser = !!globalThis?.window
-    const dev = globalThis.process?.env?.NODE_ENV && !globalThis.process.env.NODE_ENV.toLowerCase().startsWith('prod');
+    const browser = !!globalThis?.window;
+    const dev =
+        (globalThis as any)?.process?.env?.NODE_ENV &&
+        !(globalThis as any)?.process.env.NODE_ENV.toLowerCase().startsWith(
+            "prod",
+        );
+
+    console.debug({ browser, dev });
 
     import { onMount, setContext, type Snippet } from "svelte";
     import { SvelteMap } from "svelte/reactivity";
@@ -19,7 +25,7 @@
     } from "./diagram-lib.js";
     import { draw } from "svelte/transition";
 
-    export interface DiagramNode {
+    export interface DiagramNodeDef {
         id: string;
         x: number;
         y: number;
@@ -44,7 +50,7 @@
 
     export type DiagramEdgeParams = {
         // target: string;
-        snippet?: Snippet<[edge: DiagramEdge, path: string, extra: any]>;
+        snippet?: Snippet<[edge: DiagramEdgeDef, path: string, extra: any]>;
         snippetExtraArg?: any;
 
         sourceAnchor?: Vector2;
@@ -55,14 +61,14 @@
         zIndex?: number;
     } & PathGenParams;
 
-    export type DiagramEdge = {
+    export type DiagramEdgeDef = {
         source: string;
         target: string;
     } & DiagramEdgeParams;
 
     export type DiagramProps = {
-        nodes: SvelteMap<string, DiagramNode>;
-        edges: SvelteMap<string, DiagramEdge>;
+        nodes: SvelteMap<string, DiagramNodeDef>;
+        edges: SvelteMap<string, DiagramEdgeDef>;
         children: Snippet;
     };
 
@@ -70,7 +76,7 @@
     // export const getNodeOrigin = (node: DiagramNode) => node.origin ?? vector2(0.5, 0.5);
     // export const getNodeOrigin = (node: DiagramNode) => vector2(0.0, 0.0);
 
-    const getNodeSize = (node: DiagramNode) => ({
+    const getNodeSize = (node: DiagramNodeDef) => ({
         x: node.width ?? 0,
         y: node.height ?? 0,
     });
@@ -83,7 +89,7 @@
         y1: number,
         x2: number,
         y2: number,
-        edge: DiagramEdge,
+        edge: DiagramEdgeDef,
     ): string {
         const {
             sourceAnchor: source = Anchor.CENTER_CENTER,
@@ -195,11 +201,12 @@
     setContext("nodeMap", () => nodes);
     setContext("edgeMap", () => edges);
     setContext("dimensions", () => dimensions);
+    setContext("prerendering", false);
 
     let width = $derived(Math.max(dimensions.max.x - dimensions.min.x, 1));
     let height = $derived(Math.max(dimensions.max.y - dimensions.min.y, 1));
 
-    function generateEdgePath(edge: DiagramEdge) {
+    function generateEdgePath(edge: DiagramEdgeDef) {
         const sourceNode = nodes.get(edge.source)!;
         const targetNode = nodes.get(edge.target)!;
 
@@ -221,7 +228,7 @@
         );
     }
 
-    function getNodeAnchor(node: DiagramNode, anchor: Vector2) {
+    function getNodeAnchor(node: DiagramNodeDef, anchor: Vector2) {
         const size = getNodeSize(node);
 
         // if (!browser && !eq(anchor, Anchor.CENTER_CENTER) && eq(size, vector2(0, 0))) {
@@ -262,7 +269,7 @@
     });
 </script>
 
-{#snippet defaultEdge(edge: DiagramEdge, edgePath: string)}
+{#snippet defaultEdge(edge: DiagramEdgeDef, edgePath: string)}
     <path
         d={edgePath}
         fill="none"

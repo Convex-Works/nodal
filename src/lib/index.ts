@@ -6,8 +6,8 @@ export { default as PrerenderDiagram } from './PrerenderDiagram.svelte';
 export * from './diagram-lib.js';
 
 export type {
-	DiagramNode as DiagramNodeType,
-	DiagramEdge,
+	// DiagramNode as DiagramNodeType,
+	DiagramEdgeDef as DiagramEdge,
 	DiagramEdgeParams,
 	DiagramProps
 } from './Diagram.svelte';

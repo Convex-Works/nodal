@@ -7,6 +7,7 @@ A Svelte 5 library for creating interactive node diagrams with customizable conn
 - Static rendering by default
 - SVG Rendering
 - Fully typed
+- Lightweight and performant
 
 ## Quick Start
 

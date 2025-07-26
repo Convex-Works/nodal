@@ -7,13 +7,13 @@
         type Snippet,
     } from "svelte";
     import type {
-        DiagramNode,
+        DiagramNodeDef,
         DiagramEdgeParams,
-        DiagramEdge,
+        DiagramEdgeDef,
     } from "./Diagram.svelte";
     import type { SvelteMap } from "svelte/reactivity";
     import type { HTMLAttributes } from "svelte/elements";
-    import { vector2, type Vector2 } from "./diagram-lib";
+    import { vector2, type Vector2 } from "./diagram-lib.js";
 
     // type IndividualConnectActionParam = string | Omit<DiagramEdge, 'source'>;
     type IndividualConnectActionParam =
@@ -35,7 +35,7 @@
         connectSource?: DiagramNodeConnectSourceParam;
         autosize?: boolean;
         origin?: Vector2;
-    } & Omit<DiagramNode, "snippet"> &
+    } & Omit<DiagramNodeDef, "snippet"> &
         HTMLAttributes<HTMLDivElement>;
 
     let {
@@ -56,10 +56,10 @@
     }: DiagramNodeProps = $props();
 
     const nodeMap = (
-        getContext("nodeMap") as () => SvelteMap<string, DiagramNode>
+        getContext("nodeMap") as () => SvelteMap<string, DiagramNodeDef>
     )();
     const edgeMap = (
-        getContext("edgeMap") as () => SvelteMap<string, DiagramEdge>
+        getContext("edgeMap") as () => SvelteMap<string, DiagramEdgeDef>
     )();
     let dimensions = (
         getContext("dimensions") as () =>
@@ -77,7 +77,7 @@
     });
 
     // const nodeDef: DiagramNode = $derived({ id, x, y, width, height, clientOnly, snippet: children });
-    const nodeDef: DiagramNode = $derived({
+    const nodeDef: DiagramNodeDef = $derived({
         id,
         x: absolutePosition.x,
         y: absolutePosition.y,
@@ -86,7 +86,9 @@
         clientOnly: clientOnly || autosize,
         snippet: children,
     });
-    const prerender = $state.snapshot(getContext("prerendering"));
+
+    const prerender = $state.snapshot(!!getContext("prerendering"));
+    console.log("Prerendering? ", prerender);
 
     // console.log('set', nodeDef.id, nodeDef);
 
@@ -140,8 +142,8 @@
             const edgeId = getEdgeId(param.source, index);
             previousEdgeIds.add(edgeId);
 
-            (param as DiagramEdge).target = nodeDef.id;
-            edgeMap.set(edgeId, param as DiagramEdge);
+            (param as DiagramEdgeDef).target = nodeDef.id;
+            edgeMap.set(edgeId, param as DiagramEdgeDef);
         }
     }
 
@@ -163,8 +165,8 @@
             const edgeId = getEdgeId(param.target, index);
             previousEdgeIds.add(edgeId);
 
-            (param as DiagramEdge).source = nodeDef.id;
-            edgeMap.set(edgeId, param as DiagramEdge);
+            (param as DiagramEdgeDef).source = nodeDef.id;
+            edgeMap.set(edgeId, param as DiagramEdgeDef);
         }
     }
 
@@ -187,14 +189,8 @@
     let left = $derived(nodeDef.x - (dimensions?.min.x ?? 0));
     let top = $derived(nodeDef.y - (dimensions?.min.y ?? 0));
 
+    nodeMap.set(nodeDef.id, nodeDef);
     $effect(() => {
-        nodeMap.set(nodeDef.id, nodeDef);
-    });
-
-    // nodeMap.set(nodeDef.id, nodeDef);
-    $effect(() => {
-        // nodeDef.x -= (origin?.x ?? 0.5) * (nodeDef?.width ?? clientWidth ?? 0);
-        // nodeDef.y -= (origin?.y ?? 0.5) * (nodeDef?.height ?? clientHeight ?? 0);
         nodeMap.set(nodeDef.id, nodeDef);
     });
 
