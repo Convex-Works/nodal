@@ -1,11 +1,5 @@
 <script lang="ts">
-    import {
-        getContext,
-        onMount,
-        tick,
-        type ComponentProps,
-        type Snippet,
-    } from "svelte";
+    import { getContext, onMount, tick, type Snippet } from "svelte";
     import type {
         DiagramNodeDef,
         DiagramEdgeParams,
@@ -15,24 +9,18 @@
     import type { HTMLAttributes } from "svelte/elements";
     import { vector2, type Vector2 } from "./diagram-lib.js";
 
-    // type IndividualConnectActionParam = string | Omit<DiagramEdge, 'source'>;
     type IndividualConnectActionParam =
         | string
-        | (DiagramEdgeParams & { target: string });
-    type IndividualConnectSourceActionParam =
-        | string
+        | (DiagramEdgeParams & { target: string })
         | (DiagramEdgeParams & { source: string });
+
     type DiagramNodeConnectParam =
         | IndividualConnectActionParam
         | IndividualConnectActionParam[];
-    type DiagramNodeConnectSourceParam =
-        | IndividualConnectSourceActionParam
-        | IndividualConnectSourceActionParam[];
 
     export type DiagramNodeProps = {
         children?: Snippet;
         connect?: DiagramNodeConnectParam;
-        connectSource?: DiagramNodeConnectSourceParam;
         autosize?: boolean;
         origin?: Vector2;
     } & Omit<DiagramNodeDef, "snippet"> &
@@ -41,7 +29,7 @@
     let {
         children,
         connect,
-        connectSource: connectFrom,
+        // connectSource: connectFrom,
         id,
         x,
         y,
@@ -61,6 +49,7 @@
     const edgeMap = (
         getContext("edgeMap") as () => SvelteMap<string, DiagramEdgeDef>
     )();
+
     let dimensions = (
         getContext("dimensions") as () =>
             | { min: Vector2; max: Vector2 }
@@ -76,7 +65,6 @@
         y: y - (origin?.y ?? 0.5) * (height ?? 0),
     });
 
-    // const nodeDef: DiagramNode = $derived({ id, x, y, width, height, clientOnly, snippet: children });
     const nodeDef: DiagramNodeDef = $derived({
         id,
         x: absolutePosition.x,
@@ -87,18 +75,7 @@
         snippet: children,
     });
 
-    const prerender = $state.snapshot(!!getContext("prerendering"));
-    console.log("Prerendering? ", prerender);
-
-    // console.log('set', nodeDef.id, nodeDef);
-
-    // const source = elementNodeMap.get(element);
-    // if (!source) {
-    // 	return console.warn(`Could not find source element for`, element);
-    // }
-
     let mounted = $state(false);
-
     const previousEdgeIds = new Set();
 
     // TODO: this should be done only if clientWidth is needed
@@ -110,62 +87,58 @@
     // 	nodeDef.y -= (origin?.y ?? 0) * $state.snapshot(nodeDef.height ?? 0);
     // }
 
-    if (autosize) {
-        onMount(() => {
+    onMount(async () => {
+        if (autosize) {
             width = clientWidth;
             height = clientHeight;
-        });
-    }
+        }
 
-    onMount(async () => {
         if (nodeDef.clientOnly) {
             await tick();
             mounted = true;
         }
     });
 
-    function updateEdgeFrom(
-        param: IndividualConnectSourceActionParam,
-        index: number = 0,
-    ) {
-        const getEdgeId = (source: string, i: number) =>
-            `${source}:${nodeDef.id}:(${i})`;
-        // const edgeId = getEdgeId();
-        if (typeof param == "string") {
-            const source = param;
-
-            const edgeId = getEdgeId(source, index);
-            previousEdgeIds.add(edgeId);
-
-            edgeMap.set(edgeId, { target: nodeDef.id, source });
-        } else {
-            const edgeId = getEdgeId(param.source, index);
-            previousEdgeIds.add(edgeId);
-
-            (param as DiagramEdgeDef).target = nodeDef.id;
-            edgeMap.set(edgeId, param as DiagramEdgeDef);
-        }
-    }
-
     function updateEdge(
         param: IndividualConnectActionParam,
         index: number = 0,
     ) {
-        const getEdgeId = (target: string, i: number) =>
-            `${nodeDef.id}:${target}:(${i})`;
-        // const edgeId = getEdgeId();
+        const selfId = nodeDef.id;
+        const getEdgeId = ({
+            source,
+            target,
+            index,
+        }: {
+            source: string;
+            target: string;
+            index: number;
+        }) => `${source}:${target}:(${index})`;
+
         if (typeof param == "string") {
             const target = param;
 
-            const edgeId = getEdgeId(target, index);
+            const edgeId = getEdgeId({ source: selfId, target, index });
             previousEdgeIds.add(edgeId);
 
             edgeMap.set(edgeId, { source: nodeDef.id, target });
-        } else {
-            const edgeId = getEdgeId(param.target, index);
+        } else if ("target" in param) {
+            // const edgeId = getEdgeId(param.target, index);
+            const edgeId = getEdgeId({
+                source: selfId,
+                target: param.target,
+                index,
+            });
             previousEdgeIds.add(edgeId);
-
             (param as DiagramEdgeDef).source = nodeDef.id;
+            edgeMap.set(edgeId, param as DiagramEdgeDef);
+        } else if ("source" in param) {
+            const edgeId = getEdgeId({
+                source: param.source,
+                target: selfId,
+                index,
+            });
+            previousEdgeIds.add(edgeId);
+            (param as DiagramEdgeDef).target = selfId;
             edgeMap.set(edgeId, param as DiagramEdgeDef);
         }
     }
@@ -175,14 +148,6 @@
             updateEdge(connect);
         } else {
             connect.forEach(updateEdge);
-        }
-    }
-
-    if (connectFrom) {
-        if (!Array.isArray(connectFrom)) {
-            updateEdgeFrom(connectFrom);
-        } else {
-            connectFrom.forEach(updateEdgeFrom);
         }
     }
 

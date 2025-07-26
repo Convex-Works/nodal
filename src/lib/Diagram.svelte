@@ -243,8 +243,9 @@
         return { left, top };
     }
 
+    // TODO: desperate need for refactoring
     let edgesByZIndexPlane = $derived(
-        edges.values().reduce((acc, edge) => {
+        Array.from(edges.values()).reduce((acc, edge) => {
             const zIndex = edge.zIndex ?? 0;
             if (!acc.has(zIndex)) {
                 acc.set(zIndex, []);
