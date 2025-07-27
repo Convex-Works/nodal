@@ -1,5 +1,6 @@
 <script lang="ts">
     const { data } = $props();
+    console.log("-> data [slug] are :: ", data);
 </script>
 
 <svelte:head>
@@ -8,10 +9,9 @@
     <!-- <meta property="og:title" content={data.meta.title} /> -->
 </svelte:head>
 
-
 <hgroup class="mb-4">
     <h1 class="text-2xl">{data.meta?.title}</h1>
-    <p> { data.meta?.description} </p>
+    <p>{data.meta?.description}</p>
 </hgroup>
 
 <div class="my-4">
