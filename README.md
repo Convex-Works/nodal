@@ -221,3 +221,8 @@ const nodes: DiagramNodeType[] = [
 ## License
 
 MIT License - see LICENSE file for details.
+
+
+# TODOs:
+- Refactor away from Diagram.svelte:247 into a more efficient rendering system
+- Add a testing suite that uses the browser DOM and takes screenshots to verify correct rendering against expected outputs

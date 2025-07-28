@@ -15,6 +15,7 @@ export async function initEnv() {
   _proc = proc;
   const reader = proc.stdout.getReader();
   const decoder = new TextDecoder();
+  console.log("waiting for process to start")
   while (true) {
     const { done, value } = await reader.read();
     // if (done) throw new Error("Server did not start");
@@ -27,8 +28,10 @@ export async function initEnv() {
     }
   }
 
-  // wait for the server to start
+  console.log('--')
 
+
+  console.log("Starting Playwright browser...")
   const browser = await chromium.launch({
     headless: true,
     devtools: false,
