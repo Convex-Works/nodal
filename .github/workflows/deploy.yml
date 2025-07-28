@@ -41,17 +41,37 @@ jobs:
       - name: Build
         run: bun install && bun run build
 
-      - name: Test Build
-        run: bunx playwright install chromium && bun test
-
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v3
         with:
           # this should match the `pages` option in your adapter-static options
           path: "build"
 
+  test:
+    needs: build # only run if the build passed
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install browsers
+        run: bunx playwright install chromium
+
+      - name: Install deps
+        run: bun install # keep lockfiles in sync with CI
+
+      - name: Build
+        run: bun install && bun run build
+
+      - name: Run tests
+        run: bun test
+
   deploy:
-    needs: build
+    needs: test
     runs-on: ubuntu-latest
 
     environment:

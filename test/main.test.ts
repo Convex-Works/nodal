@@ -4,10 +4,6 @@ import { getScreenshotTestEntries, getScreenshotTestExpectedPath, goto, initEnv,
 const { context } = await initEnv()
 const entries = await getScreenshotTestEntries()
 
-afterAll(() => {
-  exit();
-})
-
 function totalSAD(bufA: ArrayBufferLike, bufB: ArrayBufferLike) {
   if (bufA.byteLength !== bufB.byteLength) throw new Error("size mismatch");
   const a = new Uint8Array(bufA);
