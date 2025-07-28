@@ -9,6 +9,7 @@ for (const entry of entries) {
 
   const buffer = await page.screenshot({
     scale: "css",
+    fullPage: true
   })
 
   // const path = `test/screenshot-tests/${entry}/expected`;
