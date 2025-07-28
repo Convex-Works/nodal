@@ -9,7 +9,7 @@ export async function initEnv() {
     throw new Error("Environment already initialized");
   }
 
-  const proc = Bun.spawn(["bun", "preview", "--port", port.toString()], {
+  const proc = Bun.spawn(["bun", "preview", "", "--strictPort", "--port", port.toString()], {
     stdout: "pipe"
   });
   _proc = proc;
@@ -22,10 +22,11 @@ export async function initEnv() {
     const line = decoder.decode(value, { stream: true })
     console.log(line)
     if (done) break;
-    if (line.includes("Local: ")) {
-      console.log("Server started successfully");
-      break;
-    }
+    break;
+    // if (line.includes("Local: ")) {
+    //   console.log("Server started successfully");
+    //   break;
+    // }
   }
 
   console.log('--')
