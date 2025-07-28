@@ -1,61 +1,44 @@
-import { chromium, type Browser, type BrowserContext, type Page } from 'playwright';
-import { readdir } from "node:fs/promises";
+import { afterAll, beforeAll, describe, expect, test } from "bun:test"
+import { getScreenshotTestEntries, getScreenshotTestExpectedPath, goto, initEnv, exit } from "./common"
 
-const port = 3000;
+const { context } = await initEnv()
+const entries = await getScreenshotTestEntries()
 
-const proc = Bun.spawn(["bun", "preview", "--port", port.toString()], {
-  stdout: "pipe"
-});
-const reader = proc.stdout.getReader();
-const decoder = new TextDecoder();
-while (true) {
-  const { done, value } = await reader.read();
-  // if (done) throw new Error("Server did not start");
-  const line = decoder.decode(value, { stream: true })
-  console.log(line)
-  if (done) break;
-  if (line.includes("Local: ")) {
-    console.log("Server started successfully");
-    break;
+afterAll(() => {
+  exit();
+})
+
+function totalSAD(bufA: ArrayBufferLike, bufB: ArrayBufferLike) {
+  if (bufA.byteLength !== bufB.byteLength) throw new Error("size mismatch");
+  const a = new Uint8Array(bufA);
+  const b = new Uint8Array(bufB);
+  let diff = 0;
+  for (let i = 0; i < a.length; i++) {
+    diff += Math.abs(a[i] - b[i]);
   }
+  return diff;           // lower == more similar
 }
 
+describe("Screenshot tests", () => {
+  for (const entry of entries) {
 
-// wait for the server to start
+    test(`Regression test for ${entry}`, async () => {
+      const page = await context.newPage();
 
-console.log("Initialising tests..")
+      console.log("entry :: ", entry)
+      await goto(page, `/tests/${entry}`)
 
-const browser = await chromium.launch({
-  headless: false,
-  devtools: true,
+      const image = await page.screenshot({
+        scale: "css",
+      })
+
+      const expectedImage = await Bun.file(getScreenshotTestExpectedPath(entry)).arrayBuffer();
+      expect(image.byteLength, "snapshots should have the same length").toBe(expectedImage.byteLength)
+
+      const sad = totalSAD(image.buffer, expectedImage)
+      expect(sad, "snapshots should be the same").toBeLessThan(1);
+
+      await page.close();
+    })
+  }
 })
-// Create context
-const context = await browser.newContext({
-  viewport: { width: 1920, height: 1080 },
-  userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-});
-
-const entries = await readdir("./test/screenshot-tests");
-console.log("entreis : ", entries)
-
-
-// Create initial page
-const page = await context.newPage();
-await page.goto(`http://localhost:${port}`, {
-  waitUntil: "domcontentloaded"
-})
-
-for (const entry of entries) {
-  console.log("entry :: ", entry)
-  await page.goto(`http://localhost:${port}/tests/${entry}`, {
-    waitUntil: "domcontentloaded"
-  })
-
-  await page.screenshot({
-    scale: "css",
-    path: `test/screenshot-tests/${entry}/expected.png`,
-  })
-}
-// await new Promise(resolve => setTimeout(resolve, 5000)); // wait for the page to load
-
-proc.kill();
