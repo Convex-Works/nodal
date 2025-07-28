@@ -187,6 +187,5 @@ top:${top}px;left:${left}px;${nodeDef.clientOnly && !mounted ? "opacity:0" : ""}
             bind:clientHeight
         ></div>
     {/if}
-    <!-- <div class="absolute top-0 left-0 w-full h-full bg-red-500"> {nodeDef.clientOnly} {mounted}</div> -->
     {@render children?.()}
 </div>

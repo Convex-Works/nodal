@@ -2,13 +2,18 @@ import { afterAll, describe, expect, test } from "bun:test"
 import { getScreenshotTestEntries, getScreenshotTestExpectedPath, goto, initEnv, exit } from "./common"
 import pixelmatch from "pixelmatch"
 import { PNG } from 'pngjs';
+import { tmpdir } from 'os';
 
 
 const { context, proc } = await initEnv()
 const entries = await getScreenshotTestEntries()
 
-afterAll(() => {
-  proc.kill(0)
+afterAll(async () => {
+  console.log("killing process...")
+  console.time("kill server")
+  proc.kill("SIGKILL")
+  await proc.exited; // resolves when process exit
+  console.timeEnd("kill server")
 })
 
 function totalSAD(bufA: ArrayBufferLike, bufB: ArrayBufferLike) {
@@ -31,10 +36,13 @@ describe("Screenshot tests", () => {
       console.log("entry :: ", entry)
       await goto(page, `/tests/${entry}`)
 
+      const path = `${tmpdir()}/screenshot-test-${entry}.png`
       const image = await page.screenshot({
         scale: "css",
-        fullPage: true
+        fullPage: true,
+        path
       })
+      console.log("wrote current screenshot at", path)
 
       const expectedImage = await Bun.file(getScreenshotTestExpectedPath(entry)).arrayBuffer();
       // expect(image.byteLength, `'${entry}' snapshots should have the same length`).toBe(expectedImage.byteLength)
@@ -44,10 +52,10 @@ describe("Screenshot tests", () => {
       // expect(sad, `'${entry}' snapshots be the same`).toBe(expectedImage.byteLength)
       const a = PNG.sync.read(Buffer.from(image));
       const b = PNG.sync.read(Buffer.from(expectedImage));
-      const value = pixelmatch(a.data, a.data, null, 1920, 1080, { threshold: 0.1 })
+      const value = pixelmatch(a.data, b.data, null, 1920, 1080, { threshold: 0.1 })
       console.log(`pixelmatch value for ${entry} is ${value}`)
-      // expec
-      expect(value, `'${entry}' snapshots should identical`).toBeLessThan(120)
+      // expected
+      expect(value, `'${entry}' snapshots should identical`).toBeLessThan(50)
 
       await page.close();
     })
