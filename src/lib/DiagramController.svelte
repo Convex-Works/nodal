@@ -22,7 +22,7 @@
         ...rest
     }: {
         children: Snippet;
-        eagerLoad: boolean;
+        eagerLoad?: boolean;
         rootMargin?: string;
     } & HTMLAttributes<HTMLDivElement> = $props();
 
@@ -95,7 +95,7 @@
     </div>
 {:else}
     <!-- Lightweight placeholder / container used for intersection observation. -->
-    <div bind:this={containerEl} {...rest}></div>
+    <div bind:this={containerEl} {...rest} style="min-height: 1px;"></div>
 {/if}
 
 <!--
