@@ -1,29 +1,19 @@
 <script lang="ts" module>
-    const browser = !!globalThis?.window;
-    const dev =
-        (globalThis as any)?.process?.env?.NODE_ENV &&
-        !(globalThis as any)?.process.env.NODE_ENV.toLowerCase().startsWith(
-            "prod",
-        );
-
-    console.debug({ browser, dev });
-
     import { onMount, setContext, type Snippet } from "svelte";
     import { SvelteMap } from "svelte/reactivity";
     import {
-        debugSide,
         eq,
         getBezierPath,
         getSmoothStepPath,
         normaliseAngle,
         Side,
         sideForAngle,
-        unitVectorFromAngle,
         vector2,
         type Vector2,
         Anchor,
+        browser,
+        dev,
     } from "./diagram-lib.js";
-    import { draw } from "svelte/transition";
 
     export interface DiagramNodeDef {
         id: string;
@@ -160,7 +150,7 @@
     }
 
     function calculateDimensions(_nodes: typeof nodes) {
-        console.time("dim");
+        // console.time("dim");
         let newMin = vector2(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
         let newMax = vector2(Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER);
 
@@ -183,7 +173,7 @@
             );
         }
 
-        console.timeEnd("dim");
+        // console.timeEnd("dim");
         return { min: newMin, max: newMax };
     }
 

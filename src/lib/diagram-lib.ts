@@ -1,3 +1,11 @@
+
+export const browser = !!globalThis?.window;
+export const dev =
+  (globalThis as any)?.process?.env?.NODE_ENV &&
+  !(globalThis as any)?.process.env.NODE_ENV.toLowerCase().startsWith(
+    "prod",
+  );
+
 export interface Vector2 { x: number, y: number }
 export const vector2 = (x: number, y: number) => ({ x, y })
 export const eq = (a: Vector2, b: Vector2) => a.x === b.x && a.y === b.y;
