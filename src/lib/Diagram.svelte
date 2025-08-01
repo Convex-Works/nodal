@@ -60,6 +60,7 @@
         nodes: SvelteMap<string, DiagramNodeDef>;
         edges: SvelteMap<string, DiagramEdgeDef>;
         children: Snippet;
+        scaleToFit?: boolean;
     };
 
     // const getNodeOrigin = (node: DiagramNode) => node.origin ?? vector2(0.0, 0.5);
@@ -73,7 +74,7 @@
 </script>
 
 <script lang="ts">
-    let { nodes, edges, children }: DiagramProps = $props();
+    let { nodes, edges, children, scaleToFit }: DiagramProps = $props();
     export function generateCurvePath(
         x1: number,
         y1: number,
@@ -255,7 +256,20 @@
     // 	}
     // });
 
+    let diagramContainer: HTMLElement | null = null;
+    let scale = $state(1);
     onMount(() => {
+        if (scaleToFit) {
+            console.log(diagramContainer?.parentElement);
+            const scaleY = diagramContainer?.parentElement?.clientHeight
+                ? diagramContainer.parentElement?.clientHeight / height
+                : 1;
+            const scaleX = diagramContainer?.parentElement?.clientWidth
+                ? diagramContainer?.parentElement?.clientWidth / width
+                : 1;
+
+            scale = Math.min(scaleX, scaleY);
+        }
         dimensions = calculateDimensions(nodes);
     });
 </script>
@@ -275,11 +289,12 @@
 {/snippet}
 
 <figure
+    bind:this={diagramContainer}
     aria-label="Diagram"
     aria-hidden={!dev}
     inert={!dev}
     role="img"
-    style="position:relative;width:{width}px;height:{height}px;overflow:show;user-select:none;"
+    style="position:relative;width:{width}px;height:{height}px;overflow:visible;user-select:none;transform:scale({scale});transform-origin:center center;"
 >
     <!-- <svg class="absolute top-0 right-0 bottom-0 left-0 z-0 h-full w-full overflow-visible"> -->
     <!-- {#each edges.values() as edge, i}

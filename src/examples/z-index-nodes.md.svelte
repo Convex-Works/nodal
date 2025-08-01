@@ -98,10 +98,7 @@
     </DiagramNode>
 {/snippet}
 
-<DiagramController
-    class="scale-50 sm:scale-75 md:scale-100 lg:scale-105"
-    eagerLoad
->
+<DiagramController eagerLoad scaleToFit>
     <!-- {#if false} -->
     {#each LAYERS as layer, layerIndex}
         <!-- {#each Array.from({ length: rec.y }, (_, i) => i) as y, i} -->

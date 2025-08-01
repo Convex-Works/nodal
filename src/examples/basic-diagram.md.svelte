@@ -4,6 +4,7 @@
 
 <DiagramController
     class="w-full h-96 border border-gray-300 rounded-lg bg-gray-50 justify-center items-center flex"
+    scaleToFit
 >
     <DiagramNode
         id="start"

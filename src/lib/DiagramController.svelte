@@ -18,11 +18,13 @@
     let {
         children,
         eagerLoad = false,
+        scaleToFit = false,
         rootMargin = "100px", // start a bit before it enters the viewport
         ...rest
     }: {
         children: Snippet;
         eagerLoad?: boolean;
+        scaleToFit?: boolean;
         rootMargin?: string;
     } & HTMLAttributes<HTMLDivElement> = $props();
 
@@ -89,7 +91,7 @@
 
     <!-- second pass: render with computed positions -->
     <div {...rest}>
-        <Diagram {nodes} {edges}>
+        <Diagram {nodes} {edges} {scaleToFit}>
             {@render children()}
         </Diagram>
     </div>
