@@ -20,12 +20,14 @@
         eagerLoad = false,
         scaleToFit = false,
         rootMargin = "100px", // start a bit before it enters the viewport
+        figureAttributes = { inert: true, "aria-hidden": true },
         ...rest
     }: {
         children: Snippet;
         eagerLoad?: boolean;
         scaleToFit?: boolean;
         rootMargin?: string;
+        figureAttributes: HTMLAttributes<HTMLElement>;
     } & HTMLAttributes<HTMLDivElement> = $props();
 
     const nodes = new SvelteMap<string, DiagramNodeDef>();
@@ -87,11 +89,11 @@
 
 {#if shouldRender}
     <!-- first pass: register all the nodes and edges -->
-    <PrerenderDiagram {nodes} {edges} {children} />
+    <PrerenderDiagram {nodes} {edges} {children} {figureAttributes} />
 
     <!-- second pass: render with computed positions -->
     <div {...rest}>
-        <Diagram {nodes} {edges} {scaleToFit}>
+        <Diagram {nodes} {edges} {scaleToFit} {figureAttributes}>
             {@render children()}
         </Diagram>
     </div>

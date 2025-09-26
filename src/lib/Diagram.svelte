@@ -14,6 +14,7 @@
         browser,
         dev,
     } from "./diagram-lib.js";
+    import type { HTMLAttributes } from "svelte/elements";
 
     export interface DiagramNodeDef {
         id: string;
@@ -61,6 +62,7 @@
         edges: SvelteMap<string, DiagramEdgeDef>;
         children: Snippet;
         scaleToFit?: boolean;
+        figureAttributes: HTMLAttributes<HTMLElement>;
     };
 
     // const getNodeOrigin = (node: DiagramNode) => node.origin ?? vector2(0.0, 0.5);
@@ -74,7 +76,8 @@
 </script>
 
 <script lang="ts">
-    let { nodes, edges, children, scaleToFit }: DiagramProps = $props();
+    let { nodes, edges, children, scaleToFit, figureAttributes }: DiagramProps =
+        $props();
     export function generateCurvePath(
         x1: number,
         y1: number,
@@ -95,7 +98,7 @@
             return normaliseAngle(raw);
         }
 
-        // CRUCIAL TO INVEST THE Y DIRECTION SINCE IT GOES FROM
+        // CRUCIAL TO INVERT THE Y DIRECTION SINCE IT GOES FROM
         // NEGATIVE TO POSITIVE!!!!!!!!!!!!!
         const leaveAngle = Math.atan2(y1 - y2, x2 - x1);
         const arriveAngle = leaveAngle + Math.PI;
@@ -293,6 +296,7 @@
     aria-label="Diagram"
     aria-hidden={!dev}
     inert={!dev}
+    {...figureAttributes}
     role="img"
     style="position:relative;width:{width}px;height:{height}px;overflow:visible;user-select:none;transform:scale({scale});transform-origin:center center;"
 >
