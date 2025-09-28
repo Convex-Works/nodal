@@ -164,6 +164,7 @@
 
     function calculateDimensions(_nodes: typeof nodes) {
         if (userDefinedDiagramHeight && userDefinedDiagramWidth) {
+            console.log("~shortcut->");
             return {
                 min: vector2(0, 0),
                 max: vector2(userDefinedDiagramWidth, userDefinedDiagramHeight),
@@ -197,9 +198,11 @@
         return { min: newMin, max: newMax };
     }
 
+    $inspect({ userDefinedDiagramHeight, userDefinedDiagramWidth });
     // const dimensions = $derived(calculateDimensions(nodes));
     // let dimensions = $derived(calculateDimensions(nodes));
     let dimensions = $state(calculateDimensions(nodes));
+
     $effect(() => {
         const newDimensions = calculateDimensions(nodes);
         dimensions.min = newDimensions.min;
@@ -369,5 +372,7 @@
         </svg>
     {/each}
 
-    {@render children()}
+    {#key dimensions}
+        {@render children()}
+    {/key}
 </figure>

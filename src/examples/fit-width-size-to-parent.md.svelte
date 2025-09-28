@@ -74,20 +74,20 @@
                 class="bg-red-500 size-50"
             />
 
-            <!-- <DiagramNode
+            <DiagramNode
                 id={`kubernetes-api`}
-                x={relX(50)}
-                origin={vector2(0.5, 0.5)}
-                y={0}
+                x={relX(100)}
+                y={relY(100)}
+                origin={vector2(1, 1)}
                 height={50}
                 width={200}
                 class="flex items-center justify-center rounded-lg border border-blue-200 bg-blue-100 p-1 text-blue-900 shadow-inner"
-                connect={[]}
+                connect={["edge-1", "edge-2"]}
             >
                 <div
                     class="flex h-full w-full items-center justify-center rounded-sm bg-blue-50 text-blue-700 shadow"
                 ></div>
-            </DiagramNode> -->
+            </DiagramNode>
         </DiagramController>
     </div>
 </div>
