@@ -18,17 +18,30 @@
     let {
         children,
         eagerLoad = false,
-        scaleToFit = false,
+        scaleToFit,
+        width,
+        height,
         rootMargin = "100px", // start a bit before it enters the viewport
         figureAttributes = { inert: true, "aria-hidden": true },
         ...rest
-    }: {
+    }: ({
         children: Snippet;
         eagerLoad?: boolean;
-        scaleToFit?: boolean;
         rootMargin?: string;
-        figureAttributes: HTMLAttributes<HTMLElement>;
-    } & HTMLAttributes<HTMLDivElement> = $props();
+        figureAttributes?: HTMLAttributes<HTMLElement>;
+    } & (
+        | {
+              scaleToFit?: boolean;
+              width?: never;
+              height?: never;
+          }
+        | {
+              scaleToFit?: never;
+              width: number;
+              height: number;
+          }
+    )) &
+        Omit<HTMLAttributes<HTMLDivElement>, "width" | "height"> = $props();
 
     const nodes = new SvelteMap<string, DiagramNodeDef>();
     const layers = new SvelteMap<number, Record<string, DiagramNodeDef>>();
@@ -93,7 +106,14 @@
 
     <!-- second pass: render with computed positions -->
     <div {...rest}>
-        <Diagram {nodes} {edges} {scaleToFit} {figureAttributes}>
+        <Diagram
+            {nodes}
+            {edges}
+            {scaleToFit}
+            {width}
+            {height}
+            {figureAttributes}
+        >
             {@render children()}
         </Diagram>
     </div>

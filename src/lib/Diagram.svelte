@@ -62,6 +62,8 @@
         edges: SvelteMap<string, DiagramEdgeDef>;
         children: Snippet;
         scaleToFit?: boolean;
+        width?: number;
+        height?: number;
         figureAttributes: HTMLAttributes<HTMLElement>;
     };
 
@@ -76,8 +78,15 @@
 </script>
 
 <script lang="ts">
-    let { nodes, edges, children, scaleToFit, figureAttributes }: DiagramProps =
-        $props();
+    let {
+        nodes,
+        edges,
+        children,
+        scaleToFit,
+        figureAttributes,
+        width: userDefinedDiagramWidth,
+        height: userDefinedDiagramHeight,
+    }: DiagramProps = $props();
     export function generateCurvePath(
         x1: number,
         y1: number,
@@ -154,6 +163,13 @@
     }
 
     function calculateDimensions(_nodes: typeof nodes) {
+        if (userDefinedDiagramHeight && userDefinedDiagramWidth) {
+            return {
+                min: vector2(0, 0),
+                max: vector2(userDefinedDiagramWidth, userDefinedDiagramHeight),
+            };
+        }
+
         // console.time("dim");
         let newMin = vector2(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
         let newMax = vector2(Number.MIN_SAFE_INTEGER, Number.MIN_SAFE_INTEGER);
@@ -189,6 +205,8 @@
         dimensions.min = newDimensions.min;
         dimensions.max = newDimensions.max;
     });
+
+    $inspect({ dimensions });
     // let dimensions = calculateDimensions(nodes);
     // onMount(() => (dimensions = calculateDimensions(nodes)));
 
@@ -197,8 +215,14 @@
     setContext("dimensions", () => dimensions);
     setContext("prerendering", false);
 
-    let width = $derived(Math.max(dimensions.max.x - dimensions.min.x, 1));
-    let height = $derived(Math.max(dimensions.max.y - dimensions.min.y, 1));
+    let width = $derived(
+        // userDefinedDiagramWidth ??
+        Math.max(dimensions.max.x - dimensions.min.x, 1),
+    );
+    let height = $derived(
+        // userDefinedDiagramHeight ??
+        Math.max(dimensions.max.y - dimensions.min.y, 1),
+    );
 
     function generateEdgePath(edge: DiagramEdgeDef) {
         const sourceNode = nodes.get(edge.source)!;
@@ -263,6 +287,12 @@
     let scale = $state(1);
     onMount(() => {
         if (scaleToFit) {
+            if (userDefinedDiagramHeight || userDefinedDiagramWidth) {
+                throw new Error(
+                    "Cannot use user defined width/height with scaleToFit",
+                );
+            }
+
             console.log(diagramContainer?.parentElement);
             const scaleY = diagramContainer?.parentElement?.clientHeight
                 ? diagramContainer.parentElement?.clientHeight / height
