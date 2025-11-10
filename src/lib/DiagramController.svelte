@@ -1,14 +1,5 @@
-<script lang="ts">
-    import { SvelteMap } from "svelte/reactivity";
-    import Diagram, {
-        type DiagramNodeDef,
-        type DiagramEdgeDef,
-    } from "./Diagram.svelte";
-    import { onMount, setContext, type Snippet } from "svelte";
-    import type { HTMLAttributes } from "svelte/elements";
-    import PrerenderDiagram from "./PrerenderDiagram.svelte";
-
-    type PassthroughDiagramControllerProps = ({
+<script lang="ts" module>
+    export type PassthroughDiagramControllerProps = ({
         eagerLoad?: boolean;
         rootMargin?: string;
         figureAttributes?: HTMLAttributes<HTMLElement>;
@@ -25,6 +16,17 @@
           }
     )) &
         Omit<HTMLAttributes<HTMLDivElement>, "width" | "height">;
+</script>
+
+<script lang="ts">
+    import { SvelteMap } from "svelte/reactivity";
+    import Diagram, {
+        type DiagramNodeDef,
+        type DiagramEdgeDef,
+    } from "./Diagram.svelte";
+    import { onMount, setContext, type Snippet } from "svelte";
+    import type { HTMLAttributes } from "svelte/elements";
+    import PrerenderDiagram from "./PrerenderDiagram.svelte";
 
     let {
         children,
