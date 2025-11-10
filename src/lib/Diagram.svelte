@@ -164,7 +164,6 @@
 
     function calculateDimensions(_nodes: typeof nodes) {
         if (userDefinedDiagramHeight && userDefinedDiagramWidth) {
-            console.log("~shortcut->");
             return {
                 min: vector2(0, 0),
                 max: vector2(userDefinedDiagramWidth, userDefinedDiagramHeight),

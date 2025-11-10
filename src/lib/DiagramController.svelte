@@ -4,28 +4,11 @@
         type DiagramNodeDef,
         type DiagramEdgeDef,
     } from "./Diagram.svelte";
-    import {
-        createRawSnippet,
-        flushSync,
-        onMount,
-        setContext,
-        type Snippet,
-    } from "svelte";
+    import { onMount, setContext, type Snippet } from "svelte";
     import type { HTMLAttributes } from "svelte/elements";
     import PrerenderDiagram from "./PrerenderDiagram.svelte";
-    import { browser } from "./diagram-lib.js";
 
-    let {
-        children,
-        eagerLoad = false,
-        scaleToFit,
-        width,
-        height,
-        rootMargin = "100px", // start a bit before it enters the viewport
-        figureAttributes = { inert: true, "aria-hidden": true },
-        ...rest
-    }: ({
-        children: Snippet;
+    type PassthroughDiagramControllerProps = ({
         eagerLoad?: boolean;
         rootMargin?: string;
         figureAttributes?: HTMLAttributes<HTMLElement>;
@@ -41,14 +24,25 @@
               height: number;
           }
     )) &
-        Omit<HTMLAttributes<HTMLDivElement>, "width" | "height"> = $props();
+        Omit<HTMLAttributes<HTMLDivElement>, "width" | "height">;
+
+    let {
+        children,
+        eagerLoad = false,
+        scaleToFit,
+        width,
+        height,
+        rootMargin = "100px", // start a bit before it enters the viewport
+        figureAttributes = { inert: true, "aria-hidden": true },
+        ...rest
+    }: PassthroughDiagramControllerProps & { children: Snippet } = $props();
 
     const nodes = new SvelteMap<string, DiagramNodeDef>();
     const layers = new SvelteMap<number, Record<string, DiagramNodeDef>>();
     setContext("layerNodeMap", () => layers);
     const edges = new SvelteMap<string, DiagramEdgeDef>();
 
-    let containerEl: HTMLDivElement | undefined;
+    let containerEl: HTMLDivElement | undefined = $state();
 
     // If we're SSR (not browser), or eagerLoad is false, render immediately.
     // Otherwise wait until after load + idle + intersection.

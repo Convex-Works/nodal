@@ -2,7 +2,7 @@
   "name": "@cnvx/nodal",
   "private": false,
   "license": "MIT",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "scripts": {
     "dev": "vite dev",
     "dev-lib": "svelte-package -w",
