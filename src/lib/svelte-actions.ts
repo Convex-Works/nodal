@@ -69,9 +69,9 @@ function drawCall(surface: NodalSurfaceElement) {
 
 export function createNodal({
   svgAttributes = {},
-}: {
+}: Partial<{
   svgAttributes: HTMLAttributes<SVGElement>;
-}): Attachment {
+}> = {}): Attachment {
   return (element) => {
     console.debug("Creating nodal sruface..");
     if (!Object.hasOwn(element, "_nodalSurface")) {
