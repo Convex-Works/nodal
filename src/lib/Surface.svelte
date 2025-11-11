@@ -12,6 +12,11 @@
     } from "./diagram-lib.js";
     import type { HTMLAttributes } from "svelte/elements";
     import type { Writable } from "svelte/store";
+    import {
+        getNodeAnchorFast,
+        getNodeAnchorWithBoundingClientRect,
+    } from "./layout-utils.js";
+    import { fade } from "svelte/transition";
 
     type PathGenParams =
         | {
@@ -32,25 +37,44 @@
         svgPathAttributes?: HTMLAttributes<SVGPathElement>;
     } & PathGenParams;
 
+    // export type SurfaceEdge = {
+
+    // } & SurfaceEdgeParams;
+
+    export interface PrecalculatedEdge {
+        x1: number;
+        y1: number;
+        x2: number;
+        y2: number;
+    }
+
     export type SurfaceEdge = {
         source: string | HTMLElement | string[] | HTMLElement[];
         target: string | HTMLElement | string[] | HTMLElement[];
+
+        precalculated?: PrecalculatedEdge;
     } & SurfaceEdgeParams;
 </script>
 
 <script lang="ts">
+    let svg: SVGSVGElement | undefined = $state();
+
     const {
         hostElement,
         edges: _edges,
         svgAttributes,
         width: _width,
         height: _height,
+        fadeInDuration = 80,
+        getNodeAnchor = getNodeAnchorWithBoundingClientRect,
     }: {
         hostElement: Element;
         edges: SvelteMap<string, SurfaceEdge>;
         width?: Writable<number>;
         height?: Writable<number>;
         svgAttributes?: HTMLAttributes<SVGElement>;
+        getNodeAnchor?: typeof getNodeAnchorFast;
+        fadeInDuration?: number;
     } = $props();
 
     export const width = _width;
@@ -158,6 +182,18 @@
     }
 
     function generateEdgePath(edge: SurfaceEdge) {
+        if (!svg) return [];
+
+        if (edge.precalculated) {
+            return generateCurvePath(
+                edge.precalculated.x1,
+                edge.precalculated.y1,
+                edge.precalculated.x2,
+                edge.precalculated.y2,
+                edge,
+            );
+        }
+
         const sourceNodes = getNodes(edge.source);
         const targetNodes = getNodes(edge.target);
 
@@ -175,10 +211,12 @@
                 const sourceAnchor = getNodeAnchor(
                     source,
                     edge.sourceAnchor ?? Anchor.CENTER_CENTER,
+                    svg!,
                 );
                 const targetAnchor = getNodeAnchor(
                     target,
                     edge.targetAnchor ?? Anchor.CENTER_CENTER,
+                    svg!,
                 );
                 paths.push(
                     generateCurvePath(
@@ -203,29 +241,23 @@
 
         return paths;
     }
-
-    function getNodeAnchor(node: HTMLElement, anchor: Vector2) {
-        return {
-            left: node.offsetLeft + anchor.x * node.clientWidth,
-            top: node.offsetTop + anchor.y * node.clientHeight,
-        };
-    }
 </script>
 
+<!-- style="position:absolute;top:0;right:0;bottom:0;left:0;height:100%;width:100%;overflow:visible;z-index:0;" -->
 <svg
-    shape-rendering="crispEdges"
-    style="position:absolute;top:0;right:0;bottom:0;left:0;height:100%;width:100%;overflow:visible;z-index:0;"
+    bind:this={svg}
+    preserveAspectRatio="none"
+    style="position: absolute; inset: 0px; height: 1px; width: 1px; overflow: visible; z-index: 0;"
     {...svgAttributes}
 >
-    {#each edges.values() as edge}
-        {#each generateEdgePath(edge) as path}
-            {@const EdgeComponent = edge.component ?? BaseEdge}
-            <EdgeComponent {path} {edge} />
-            <!-- {@render (edge.snippet ? edge.snippet : defaultEdge)(
-                edge,
-                path,
-                edge.snippetExtraArg,
-            )} -->
-        {/each}
-    {/each}
+    {#if svg}
+        <g in:fade={{ duration: fadeInDuration }}>
+            {#each edges.values() as edge}
+                {#each generateEdgePath(edge) as path}
+                    {@const EdgeComponent = edge.component ?? BaseEdge}
+                    <EdgeComponent {path} {edge} />
+                {/each}
+            {/each}
+        </g>
+    {/if}
 </svg>

@@ -1,0 +1,85 @@
+<script lang="ts">
+    import {
+        getNodeAnchorFast,
+        getNodeAnchorWithBoundingClientRect,
+    } from "$lib/layout-utils.js";
+    import { createNodal, connectTo, vector2, type Vector2 } from "@cnvx/nodal";
+</script>
+
+<div
+    class="mt-7 flex w-full flex-row items-center justify-between gap-4 px-4"
+    {@attach createNodal({
+        getNodeAnchor: getNodeAnchorWithBoundingClientRect,
+        onMount: (engine) => {
+            // requestAnimationFrame(() => {
+            //     while (true) {
+            //         engine.draw();
+            //     }
+            // });
+            // window.onscroll = () => {
+            //     engine.draw();
+            // };
+            requestAnimationFrame(function tick() {
+                engine.draw();
+                requestAnimationFrame(tick);
+            });
+        },
+    })}
+>
+    <div
+        id="rpo"
+        class="flex flex-col items-center gap-2 z-10 bg-white p-3"
+        {@attach connectTo({
+            target: "#incident",
+            targetAnchor: vector2(0, 0),
+        })}
+    >
+        <p class="text-lg font-medium">RPO</p>
+        <p class="text-muted-foreground text-sm">Recovery Point Objective</p>
+    </div>
+
+    <div
+        id="incident"
+        class="z-10 flex flex-col items-center gap-2 rounded-sm border border-red-500/20 bg-red-500/20 p-3"
+        {@attach connectTo("#rto")}
+    >
+        <p class="text-md font-medium text-red-500">Incident</p>
+    </div>
+
+    <div
+        class="flex flex-col items-center gap-2 z-10 bg-white p-3 translate-y-[150px]"
+        id="rto"
+        {@attach connectTo({
+            target: ".boing",
+            targetAnchor: vector2(0.5, 1),
+            // pathGen: "smoothstep",
+            svgPathAttributes: { class: "stroke-red-500" },
+        })}
+    >
+        <p class="text-lg font-medium">RTO</p>
+        <p class="text-muted-foreground text-sm">Recovery Time Objective</p>
+    </div>
+
+    {#each Array.from({ length: 20 }, (_, i) => i) as i}
+        <div
+            class="size-4 bg-red-500 boing fixed top-20"
+            style="animation-delay: {i * 50}ms; left: {20 + i * 30}px"
+        />
+    {/each}
+</div>
+
+<style>
+    @keyframes idle-float {
+        0%,
+        100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-20px);
+        }
+    }
+
+    .boing {
+        animation: idle-float 3s ease-in-out infinite;
+    }
+</style>

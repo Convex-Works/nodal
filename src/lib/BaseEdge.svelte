@@ -14,9 +14,11 @@
 <path
     d={path}
     fill="none"
+    stroke-width="2"
     stroke="currentColor"
     stroke-linecap="round"
     stroke-linejoin="round"
     shape-rendering="smooth"
+    vector-effect="non-scaling-stroke"
     {...edge.svgPathAttributes || {}}
 />
